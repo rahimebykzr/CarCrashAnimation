@@ -1,0 +1,183 @@
+import maya.cmds as cmds
+car_name = "blendShapeCar:car4:car2:polySurface77"
+lamp_name = "blendShapeLamp:streetlamp:pCylinder4"
+
+while True:
+    speed = float(input("Arabanın hızını girin: "))
+    if 1 <= speed <= 300:
+        break
+    else:
+        print("Hız sınırları dışında bir değer girdiniz. Lütfen 1 ile 300 arasında bir hız değeri girin.")
+
+lamp_target_x = float(input("Lambanın X ekseni için hedef konumunu giriniz: "))
+lamp_target_y = float(input("Lambanın Y ekseni için hedef konumunu giriniz: "))
+lamp_target_z = float(input("Lambanın Z ekseni için hedef konumunu giriniz: "))
+
+if lamp_target_x == 0:
+    car_target_x = 0
+elif lamp_target_x < 0:
+    car_target_x = lamp_target_x + 3
+else:
+    car_target_x = lamp_target_x - 3
+
+if lamp_target_z == 0:
+    car_target_z = 0
+elif lamp_target_z < 0:
+    car_target_z = lamp_target_z + 7
+else:
+    car_target_z = lamp_target_z - 3
+
+if 1 <= speed <= 50:
+    animation_time = 60
+elif 51 <= speed <= 100:
+    animation_time = 45
+elif 101 <= speed <= 150:
+    animation_time = 30
+elif 151 <= speed <= 200:
+    animation_time = 20
+elif 201 <= speed <= 250:
+    animation_time = 10
+elif 251 <= speed <= 300:
+    animation_time = 5
+else:
+    print("Hız sınırları dışında bir değer girdiniz. Lütfen 1 ile 300 arasında bir hız değeri giriniz.")
+    
+car = cmds.ls(car_name)[0]
+lamp = cmds.ls(lamp_name)[0]
+
+car_blend_shape_node1 = "blendShapeCar:blendShape1"
+car_blend_shape_node2 = "blendShapeCar:blendShape2"
+car_blend_shape_node3 = "blendShapeCar:blendShape3"
+car_blend_shape_node4 = "blendShapeCar:blendShape4"
+car_blend_shape_node5 = "blendShapeCar:blendShape5"
+car_blend_shape_node6 = "blendShapeCar:blendShape6"
+
+lamp_blend_shape_node1 = "blendShapeLamp:blendShape1"
+lamp_blend_shape_node2 = "blendShapeLamp:blendShape2"
+lamp_blend_shape_node3 = "blendShapeLamp:blendShape3"
+lamp_blend_shape_node4 = "blendShapeLamp:blendShape4"
+lamp_blend_shape_node5 = "blendShapeLamp:blendShape5"
+lamp_blend_shape_node6 = "blendShapeLamp:blendShape6"
+
+cmds.setAttr(car_blend_shape_node1 + ".polySurface77", 0.0)
+cmds.setAttr(car_blend_shape_node2 + ".polySurface78", 0.0)
+cmds.setAttr(car_blend_shape_node3 + ".polySurface79", 0.0)
+cmds.setAttr(car_blend_shape_node4 + ".polySurface80", 0.0)
+cmds.setAttr(car_blend_shape_node5 + ".polySurface81", 0.0)
+cmds.setAttr(car_blend_shape_node6 + ".polySurface82", 0.0)
+
+cmds.setAttr(lamp_blend_shape_node1 + ".pCylinder4", 0.0)
+cmds.setAttr(lamp_blend_shape_node2 + ".pCylinder5", 0.0)
+cmds.setAttr(lamp_blend_shape_node3 + ".pCylinder6", 0.0)
+cmds.setAttr(lamp_blend_shape_node4 + ".pCylinder7", 0.0)
+cmds.setAttr(lamp_blend_shape_node5 + ".pCylinder8", 0.0)
+cmds.setAttr(lamp_blend_shape_node6 + ".pCylinder9", 0.0)
+
+cmds.cutKey(car_blend_shape_node1 + ".polySurface77", clear=True)
+cmds.cutKey(car_blend_shape_node2 + ".polySurface78", clear=True)
+cmds.cutKey(car_blend_shape_node3 + ".polySurface79", clear=True)
+cmds.cutKey(car_blend_shape_node4 + ".polySurface80", clear=True)
+cmds.cutKey(car_blend_shape_node5 + ".polySurface81", clear=True)
+cmds.cutKey(car_blend_shape_node6 + ".polySurface82", clear=True)
+
+cmds.cutKey(lamp_blend_shape_node1 + ".pCylinder4", clear=True)
+cmds.cutKey(lamp_blend_shape_node2 + ".pCylinder5", clear=True)
+cmds.cutKey(lamp_blend_shape_node3 + ".pCylinder6", clear=True)
+cmds.cutKey(lamp_blend_shape_node4 + ".pCylinder7", clear=True)
+cmds.cutKey(lamp_blend_shape_node5 + ".pCylinder8", clear=True)
+cmds.cutKey(lamp_blend_shape_node6 + ".pCylinder9", clear=True)
+
+start_frame = 1
+end_frame = start_frame + int(animation_time) - 1
+cmds.move(lamp_target_x, lamp_target_y, lamp_target_z, lamp)
+
+car_rotation_angle = cmds.angleBetween(v1=(0, 0, 1), v2=(lamp_target_x, lamp_target_y, lamp_target_z), euler=True)
+car_rotation_angle = [r % 360 for r in car_rotation_angle]
+
+if lamp_target_z < 0 and lamp_target_x == 0 and lamp_target_y == 0:
+    car_rotation_angle[1] += 180
+
+for frame in range(start_frame, end_frame + 1):
+    position_x = (frame - start_frame) * car_target_x / (end_frame - start_frame)
+    position_y = (frame - start_frame) * lamp_target_y / (end_frame - start_frame)
+    position_z = (frame - start_frame) * car_target_z / (end_frame - start_frame)
+
+    cmds.setKeyframe(car, attribute="translateX", value=position_x, time=frame)
+    cmds.setKeyframe(car, attribute="translateY", value=position_y, time=frame)
+    cmds.setKeyframe(car, attribute="translateZ", value=position_z, time=frame)
+
+    cmds.setKeyframe(car, attribute="rotateY", value=car_rotation_angle[1], time=frame)
+
+    if 1 <= speed <= 50:
+        if frame < end_frame:
+            cmds.setKeyframe(car_blend_shape_node1 + ".polySurface77", value=0.0, time=frame)
+        else:
+            cmds.setKeyframe(car_blend_shape_node1 + ".polySurface77", value=1.0, time=frame)
+    elif 51 <= speed <= 100:
+        if frame < end_frame:
+            cmds.setKeyframe(car_blend_shape_node2 + ".polySurface78", value=0.0, time=frame)
+        else:
+            cmds.setKeyframe(car_blend_shape_node2 + ".polySurface78", value=1.0, time=frame)
+    elif 101 <= speed <= 150:
+        if frame < end_frame:
+            cmds.setKeyframe(car_blend_shape_node3 + ".polySurface79", value=0.0, time=frame)
+        else:
+            cmds.setKeyframe(car_blend_shape_node3 + ".polySurface79", value=1.0, time=frame)
+    elif 151 <= speed <= 200:
+        if frame < end_frame:
+            cmds.setKeyframe(car_blend_shape_node4 + ".polySurface80", value=0.0, time=frame)
+        else:
+            cmds.setKeyframe(car_blend_shape_node4 + ".polySurface80", value=1.0, time=frame)
+    elif 201 <= speed <= 250:
+        if frame < end_frame:
+            cmds.setKeyframe(car_blend_shape_node5 + ".polySurface81", value=0.0, time=frame)
+        else:
+            cmds.setKeyframe(car_blend_shape_node5 + ".polySurface81", value=1.0, time=frame)
+    else:
+        if frame < end_frame:
+            cmds.setKeyframe(car_blend_shape_node6 + ".polySurface82", value=0.0, time=frame)
+        else:
+            cmds.setKeyframe(car_blend_shape_node6 + ".polySurface82", value=1.0, time=frame)
+
+
+    if 1 <= speed <= 50:
+        if frame < end_frame:
+            cmds.setKeyframe(lamp_blend_shape_node1 + ".pCylinder4", value=0.0, time=frame)
+        else:
+            cmds.setKeyframe(lamp_blend_shape_node1 + ".pCylinder4", value=1.0, time=frame)
+    elif 51 <= speed <= 100:
+        if frame < end_frame:
+            cmds.setKeyframe(lamp_blend_shape_node2 + ".pCylinder5", value=0.0, time=frame)
+        else:
+            cmds.setKeyframe(lamp_blend_shape_node2 + ".pCylinder5", value=1.0, time=frame)
+    elif 101 <= speed <= 150:
+        if frame < end_frame:
+            cmds.setKeyframe(lamp_blend_shape_node3 + ".pCylinder6", value=0.0, time=frame)
+        else:
+            cmds.setKeyframe(lamp_blend_shape_node3 + ".pCylinder6", value=1.0, time=frame)
+    elif 151 <= speed <= 200:
+        if frame < end_frame:
+            cmds.setKeyframe(lamp_blend_shape_node4 + ".pCylinder7", value=0.0, time=frame)
+        else:
+            cmds.setKeyframe(lamp_blend_shape_node4 + ".pCylinder7", value=1.0, time=frame)
+    elif 201 <= speed <= 250:
+        if frame < end_frame:
+            cmds.setKeyframe(lamp_blend_shape_node5 + ".pCylinder8", value=0.0, time=frame)
+        else:
+            cmds.setKeyframe(lamp_blend_shape_node5 + ".pCylinder8", value=1.0, time=frame)
+    else:
+        if frame < end_frame:
+            cmds.setKeyframe(lamp_blend_shape_node6 + ".pCylinder9", value=0.0, time=frame)
+        else:
+            cmds.setKeyframe(lamp_blend_shape_node6 + ".pCylinder9", value=1.0, time=frame)
+
+    lamp_rotation_angle = cmds.angleBetween(v1=(0, 0, 1), v2=(car_target_x, lamp_target_y, car_target_z), euler=True)
+    lamp_rotation_angle = [r % 360 for r in lamp_rotation_angle] 
+
+    if lamp_target_z < 0 and lamp_target_x == 0 and lamp_target_y == 0:
+        lamp_rotation_angle[1] += 180
+
+    cmds.setKeyframe(lamp, attribute="rotateY", value=lamp_rotation_angle[1] + 180, time=frame)
+
+cmds.playbackOptions(animationStartTime=start_frame, minTime=start_frame, maxTime=end_frame, animationEndTime=end_frame)
+cmds.play()
